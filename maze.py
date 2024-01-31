@@ -27,6 +27,7 @@ class Search:
         result = []
         for dx, dy in directions:
             nx, ny = x + dx, y + dy
+            #border and connectivity
             if 0 <= nx < len(self.maze) and 0 <= ny < len(self.maze[0]) and self.maze[nx][ny] == 0:
                 result.append((nx, ny))
         return result
@@ -34,8 +35,11 @@ class Search:
     # A* algorithm uses F= G + H to calculate the total cost to the target
     def A_Search(self, start, end) -> str:
         open_set = []
+        # The open_set is a priority heap: (f_score, node)
         heapq.heappush(open_set, (0, start))
+        # path is a map, {current node: previous node}
         path = {}
+        # the score is a map: {node: score}
         g_score = {start: 0}
         f_score = {start: self.heuristic(start, end)}
         while open_set:
@@ -52,7 +56,7 @@ class Search:
                     f_score[neighbor] = temp_g_score + self.heuristic(neighbor, end)
                     if neighbor not in [i[1] for i in open_set]:
                         heapq.heappush(open_set, (f_score[neighbor], neighbor))
-
+        # no node in the open_set, meanwhile the end point is not found.
         return 'NO'
 
 file_path = 'maze.txt'
