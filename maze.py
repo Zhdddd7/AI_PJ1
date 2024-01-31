@@ -1,3 +1,4 @@
+import heapq
 def read_array(file_path: str)->None:
     array = []
     try:
@@ -10,37 +11,49 @@ def read_array(file_path: str)->None:
         print(f"Error reading the file: {e}")
         return None
 #1 indicates a block that you cannot pass. 0 indicates a clear space.
-    
+#use the Manhatten distance 
 class Search:
     def __init__(self, maze) -> None:
         self.maze = maze
-        self.path = []
-        self.visited = set()
+        pass
 
-    def DFS(self, x: int, y: int, x_end: int, y_end: int) -> bool:
-        if (x, y) == (x_end, y_end):
-            self.path.append((x, y))
-            return True
+    def heuristic(self, a: list[int]  , b: list[int]) -> int:
+        return abs(a[0] - b[0]) + abs(a[1] - b[1])
 
-        if (x, y) in self.visited or self.maze[x][y] == 1:
-            return False
-
-        self.visited.add((x, y))
-        self.path.append((x, y))
-
-        # Define directions: up, down, left, right
-        directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+    #return the neighbor set of current point
+    def neighbors(self, temp: (int, int)) ->list[(int, int)]:
+        directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+        x, y = temp
+        result = []
         for dx, dy in directions:
             nx, ny = x + dx, y + dy
+            if 0 <= nx < len(self.maze) and 0 <= ny < len(self.maze[0]) and self.maze[nx][ny] == 0:
+                result.append((nx, ny))
+        return result
 
-            if 0 <= nx < len(self.maze) and 0 <= ny < len(self.maze[0]):
-                if self.DFS(nx, ny, x_end, y_end):
-                    return True
+    # A* algorithm uses F= G + H to calculate the total cost to the target
+    def A_Search(self, start, end) -> str:
+        open_set = []
+        heapq.heappush(open_set, (0, start))
+        path = {}
+        g_score = {start: 0}
+        f_score = {start: self.heuristic(start, end)}
+        while open_set:
+            _, current = heapq.heappop(open_set)
 
-        # Backtrack
-        self.path.pop()
-        return False
+            if current == end:
+                return 'YES'
 
+            for neighbor in self.neighbors(current):
+                temp_g_score = g_score[current] + 1
+                if temp_g_score < g_score.get(neighbor, float('inf')):
+                    path[neighbor] = current
+                    g_score[neighbor] = temp_g_score
+                    f_score[neighbor] = temp_g_score + self.heuristic(neighbor, end)
+                    if neighbor not in [i[1] for i in open_set]:
+                        heapq.heappush(open_set, (f_score[neighbor], neighbor))
+
+        return 'NO'
 
 file_path = 'maze.txt'
 maze= read_array(file_path)
@@ -49,10 +62,6 @@ if maze is not None:
 
 test_0 = Search(maze)
 #input the start and end coordinate.
-start = (1,2)
-end = (2, 39)
-if test_0.DFS(start[0], start[1], end[0], end[1]):
-    print('YES')
-else: 
-    print('NO')
-    
+start = (1, 75)
+end = (39, 40)
+print(test_0.A_Search(start, end))
