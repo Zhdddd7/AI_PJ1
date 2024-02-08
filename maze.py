@@ -68,4 +68,6 @@ test_0 = Search(maze)
 #input the start and end coordinate.
 start = (1, 75)
 end = (39, 40)
+print("the start point is ", start)
+print('the end point is', end)
 print(test_0.A_Search(start, end))
